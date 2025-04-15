@@ -6,11 +6,17 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entities.Usuario;
 import com.example.demo.entities.Usuario.Rol;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.UnauthorizedException;
 import com.example.demo.repositories.UsuarioRepository;
+import com.example.demo.utils.JwtUtil;
+import com.example.demo.utils.dto.LoginRequest;
 import com.example.demo.utils.dto.RegistroRequest;
 import com.example.demo.utils.dto.UsuarioResponse;
 
@@ -20,6 +26,13 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
     
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private JwtUtil jwtUtil;
+    
+    @Transactional
     public UsuarioResponse registrarUsuario(RegistroRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("El nombre de usuario ya está en uso");
@@ -33,7 +46,7 @@ public class UsuarioService {
             request.getNombre(),
             request.getUsername(),
             request.getEmail(),
-            request.getPassword(), // En una aplicación real, deberías encriptar la contraseña
+            passwordEncoder.encode(request.getPassword()),
             Rol.USUARIO
         );
         
@@ -42,6 +55,7 @@ public class UsuarioService {
         return convertToUsuarioResponse(usuario);
     }
     
+    @Transactional
     public UsuarioResponse registrarAdministrador(RegistroRequest request) {
         if (usuarioRepository.existsByUsername(request.getUsername())) {
             throw new RuntimeException("El nombre de usuario ya está en uso");
@@ -55,7 +69,7 @@ public class UsuarioService {
             request.getNombre(),
             request.getUsername(),
             request.getEmail(),
-            request.getPassword(), // En una aplicación real, deberías encriptar la contraseña
+            passwordEncoder.encode(request.getPassword()),
             Rol.ADMINISTRADOR
         );
         
@@ -64,41 +78,57 @@ public class UsuarioService {
         return convertToUsuarioResponse(usuario);
     }
     
+    @Transactional(readOnly = true)
     public UsuarioResponse obtenerUsuarioPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         
         return convertToUsuarioResponse(usuario);
     }
     
+    @Transactional(readOnly = true)
     public UsuarioResponse obtenerUsuarioPorUsername(String username) {
         Usuario usuario = usuarioRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         
         return convertToUsuarioResponse(usuario);
     }
     
-    public boolean autenticarUsuario(String username, String password) {
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+    @Transactional
+    public UsuarioResponse login(LoginRequest request) {
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(request.getUsername());
         
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            // En una aplicación real, deberías verificar la contraseña encriptada
-            return usuario.getPassword().equals(password) && usuario.isEstaActivo();
+            
+            if (!usuario.isEstaActivo()) {
+                throw new UnauthorizedException("La cuenta está desactivada");
+            }
+            
+            if (passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
+                UsuarioResponse response = convertToUsuarioResponse(usuario);
+                
+                String token = jwtUtil.generateToken(usuario.getUsername(), usuario.getRol().toString());
+                response.setToken(token);
+                
+                return response;
+            }
         }
         
-        return false;
+        throw new UnauthorizedException("Credenciales inválidas");
     }
     
+    @Transactional(readOnly = true)
     public List<UsuarioResponse> listarUsuarios() {
         return usuarioRepository.findAll().stream()
             .map(this::convertToUsuarioResponse)
             .collect(Collectors.toList());
     }
     
+    @Transactional
     public UsuarioResponse actualizarUsuario(Long id, RegistroRequest request) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         
         if (!usuario.getUsername().equals(request.getUsername()) &&
             usuarioRepository.existsByUsername(request.getUsername())) {
@@ -115,7 +145,7 @@ public class UsuarioService {
         usuario.setEmail(request.getEmail());
         
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            usuario.setPassword(request.getPassword()); // En una aplicación real, encriptar la contraseña
+            usuario.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         
         usuario = usuarioRepository.save(usuario);
@@ -123,38 +153,53 @@ public class UsuarioService {
         return convertToUsuarioResponse(usuario);
     }
     
+    @Transactional
     public void eliminarUsuario(Long id) {
         if (!usuarioRepository.existsById(id)) {
-            throw new RuntimeException("Usuario no encontrado");
+            throw new ResourceNotFoundException("Usuario no encontrado");
         }
         
         usuarioRepository.deleteById(id);
     }
     
+    @Transactional
     public void desactivarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         
         usuario.setEstaActivo(false);
         usuarioRepository.save(usuario);
     }
     
+    @Transactional
     public void activarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
         
         usuario.setEstaActivo(true);
         usuarioRepository.save(usuario);
     }
     
+    @Transactional(readOnly = true)
     public Usuario obtenerUsuarioEntity(String username) {
         return usuarioRepository.findByUsername(username)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
     }
     
+    @Transactional(readOnly = true)
     public Usuario obtenerUsuarioEntityPorId(Long id) {
         return usuarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario no encontrado"));
+    }
+    
+    @Transactional(readOnly = true)
+    public boolean validarToken(String token, String username) {
+        return jwtUtil.validateToken(token, username);
+    }
+    
+    @Transactional(readOnly = true)
+    public String obtenerRolDeToken(String token) {
+        return jwtUtil.extractClaim(token, claims -> claims.get("rol", String.class));
     }
     
     private UsuarioResponse convertToUsuarioResponse(Usuario usuario) {
@@ -163,7 +208,9 @@ public class UsuarioService {
             usuario.getNombre(),
             usuario.getUsername(),
             usuario.getEmail(),
-            usuario.getRol().toString()
+            usuario.getRol().toString(),
+            usuario.isEstaActivo(),
+            usuario.getFechaRegistro()
         );
     }
 }

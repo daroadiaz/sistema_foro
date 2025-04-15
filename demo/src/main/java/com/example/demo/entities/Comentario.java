@@ -10,6 +10,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +27,8 @@ public class Comentario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El contenido del comentario es obligatorio")
+    @Size(min = 3, message = "El comentario debe tener al menos 3 caracteres")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
 
@@ -48,7 +52,6 @@ public class Comentario {
     @JoinColumn(name = "tema_id", nullable = false)
     private Tema tema;
     
-    // Constructor
     public Comentario(String contenido, Usuario autor, Tema tema) {
         this.contenido = contenido;
         this.autor = autor;

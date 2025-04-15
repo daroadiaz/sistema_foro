@@ -1,0 +1,53 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" routerLink="/">Foro Online</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/categorias" routerLinkActive="active">Categorías</a>
+          </li>
+          <li class="nav-item" *ngIf="usuario">
+            <a class="nav-link" routerLink="/nuevo-tema" routerLinkActive="active">Nuevo Tema</a>
+          </li>
+          <li class="nav-item" *ngIf="usuario && usuario.rol === 'ADMINISTRADOR'">
+            <a class="nav-link" routerLink="/admin" routerLinkActive="active">Panel Admin</a>
+          </li>
+        </ul>
+        
+        <form class="d-flex me-2" (ngSubmit)="buscar()">
+          <input class="form-control me-2" type="search" placeholder="Buscar temas..." [(ngModel)]="searchQuery" [ngModelOptions]="{standalone: true}">
+          <button class="btn btn-outline-light" type="submit">Buscar</button>
+        </form>
+        
+        <ul class="navbar-nav" *ngIf="!usuario">
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/login" routerLinkActive="active">Iniciar Sesión</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" routerLink="/registro" routerLinkActive="active">Registrarse</a>
+          </li>
+        </ul>
+        
+        <ul class="navbar-nav" *ngIf="usuario">
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              {{ usuario.nombre }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+              <li><a class="dropdown-item" routerLink="/perfil">Mi Perfil</a></li>
+              <li><a class="dropdown-item" routerLink="/mis-temas">Mis Temas</a></li>
+              <li><a class="dropdown-item" routerLink="/mis-comentarios">Mis Comentarios</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="javascript:void(0)" (click)="logout()">Cerrar Sesión</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>

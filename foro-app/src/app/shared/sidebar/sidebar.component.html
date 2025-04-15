@@ -1,0 +1,48 @@
+<div class="sidebar">
+    <div class="card">
+      <div class="card-header bg-dark text-white">
+        <h4>Navegación</h4>
+      </div>
+      <div class="card-body">
+        <ul class="list-group mb-4">
+          <li class="list-group-item">
+            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
+          </li>
+          <li class="list-group-item">
+            <a routerLink="/categorias" routerLinkActive="active">Categorías</a>
+          </li>
+          <li class="list-group-item" *ngIf="isAuthenticated">
+            <a routerLink="/nuevo-tema" routerLinkActive="active">Crear Tema</a>
+          </li>
+          <li class="list-group-item" *ngIf="isAuthenticated">
+            <a routerLink="/perfil" routerLinkActive="active">Mi Perfil</a>
+          </li>
+          <li class="list-group-item" *ngIf="isAdmin">
+            <a routerLink="/admin" routerLinkActive="active">Panel Admin</a>
+          </li>
+        </ul>
+  
+        <div *ngIf="!isAuthenticated">
+          <div class="d-grid gap-2 mb-4">
+            <a routerLink="/login" class="btn btn-primary">Iniciar Sesión</a>
+            <a routerLink="/registro" class="btn btn-outline-primary">Registrarse</a>
+          </div>
+        </div>
+  
+        <h5 class="mt-4">Categorías</h5>
+        <div *ngIf="loading" class="text-center">
+          <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+        </div>
+        <div *ngIf="errorMessage" class="alert alert-danger small">
+          {{ errorMessage }}
+        </div>
+        <ul class="list-group">
+          <li *ngFor="let categoria of categorias" class="list-group-item">
+            <a [routerLink]="['/categorias', categoria.id]">{{ categoria.nombre }}</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>

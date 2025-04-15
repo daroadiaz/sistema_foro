@@ -1,0 +1,24 @@
+.tema-container {
+    .tema-info {
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+    
+    .tema-contenido {
+      white-space: pre-line;
+    }
+    
+    .comentario {
+      border-left: 3px solid var(--primary-color);
+    }
+    
+    .comentario-autor {
+      color: var(--primary-color);
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+    
+    .comentario-fecha {
+      color: var(--secondary-color);
+    }
+  }

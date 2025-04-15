@@ -8,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entities.Comentario;
 import com.example.demo.entities.Tema;
 import com.example.demo.entities.Usuario;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.UnauthorizedException;
 import com.example.demo.repositories.ComentarioRepository;
 import com.example.demo.services.user.UsuarioService;
 import com.example.demo.utils.dto.ComentarioRequest;
@@ -30,6 +33,7 @@ public class ComentarioService {
     @Autowired
     private UsuarioService usuarioService;
     
+    @Transactional
     public ComentarioResponse crearComentario(ComentarioRequest request, String username) {
         Usuario autor = usuarioService.obtenerUsuarioEntity(username);
         Tema tema = temaService.obtenerTemaEntity(request.getTemaId());
@@ -49,6 +53,7 @@ public class ComentarioService {
         return convertToComentarioResponse(comentario);
     }
     
+    @Transactional(readOnly = true)
     public Page<ComentarioResponse> listarComentariosPorTema(Long temaId, Pageable pageable) {
         Tema tema = temaService.obtenerTemaEntity(temaId);
         
@@ -56,6 +61,7 @@ public class ComentarioService {
             .map(this::convertToComentarioResponse);
     }
     
+    @Transactional(readOnly = true)
     public List<ComentarioResponse> listarComentariosPorUsuario(String username) {
         Usuario usuario = usuarioService.obtenerUsuarioEntity(username);
         
@@ -64,21 +70,23 @@ public class ComentarioService {
             .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public ComentarioResponse obtenerComentarioPorId(Long id) {
         Comentario comentario = comentarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado"));
         
         return convertToComentarioResponse(comentario);
     }
     
+    @Transactional
     public ComentarioResponse actualizarComentario(Long id, ComentarioRequest request, String username) {
         Comentario comentario = comentarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado"));
         
         Usuario autor = usuarioService.obtenerUsuarioEntity(username);
         
         if (!comentario.getAutor().getId().equals(autor.getId())) {
-            throw new RuntimeException("No tienes permiso para editar este comentario");
+            throw new UnauthorizedException("No tienes permiso para editar este comentario");
         }
         
         if (comentario.isEstaBaneado()) {
@@ -93,32 +101,36 @@ public class ComentarioService {
         return convertToComentarioResponse(comentario);
     }
     
+    @Transactional
     public void eliminarComentario(Long id, String username) {
         Comentario comentario = comentarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado"));
         
         Usuario usuario = usuarioService.obtenerUsuarioEntity(username);
         
         if (!comentario.getAutor().getId().equals(usuario.getId()) && 
             usuario.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permiso para eliminar este comentario");
+            throw new UnauthorizedException("No tienes permiso para eliminar este comentario");
         }
         
         comentarioRepository.delete(comentario);
     }
     
+    @Transactional(readOnly = true)
     public Comentario obtenerComentarioEntity(Long id) {
         return comentarioRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Comentario no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Comentario no encontrado"));
     }
     
-    private ComentarioResponse convertToComentarioResponse(Comentario comentario) {
+    public ComentarioResponse convertToComentarioResponse(Comentario comentario) {
         UsuarioResponse autorResponse = new UsuarioResponse(
             comentario.getAutor().getId(),
             comentario.getAutor().getNombre(),
             comentario.getAutor().getUsername(),
             comentario.getAutor().getEmail(),
-            comentario.getAutor().getRol().toString()
+            comentario.getAutor().getRol().toString(),
+            comentario.getAutor().isEstaActivo(),
+            comentario.getAutor().getFechaRegistro()
         );
         
         return new ComentarioResponse(

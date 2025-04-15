@@ -1,0 +1,113 @@
+/* Importar Bootstrap */
+@import '~bootstrap/dist/css/bootstrap.min.css';
+@import '~bootstrap-icons/font/bootstrap-icons.css';
+
+/* Variables globales */
+:root {
+  --primary-color: #007bff;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --danger-color: #dc3545;
+  --warning-color: #ffc107;
+  --info-color: #17a2b8;
+  --light-color: #f8f9fa;
+  --dark-color: #343a40;
+}
+
+/* Estilos base */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+main {
+  flex: 1 0 auto;
+  padding-bottom: 30px;
+}
+
+/* Estilos para dispositivos móviles (menor a 576px) */
+@media (max-width: 575.98px) {
+  .container {
+    padding: 0 10px;
+  }
+  
+  .card-body {
+    padding: 0.75rem;
+  }
+}
+
+/* Estilos para tablets (576px a 991.98px) */
+@media (min-width: 576px) and (max-width: 991.98px) {
+  .container {
+    padding: 0 15px;
+  }
+}
+
+/* Estilos para pantallas grandes (992px en adelante) */
+@media (min-width: 992px) {
+  .container {
+    padding: 0 20px;
+  }
+}
+
+/* Estilos personalizados */
+.tema-item:hover {
+  background-color: rgba(0,123,255,0.05);
+}
+
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-lg {
+  width: 100px;
+  height: 100px;
+}
+
+.card {
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  border-radius: 0.25rem;
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.comentario {
+  border-left: 3px solid var(--primary-color);
+  padding-left: 15px;
+  margin-bottom: 15px;
+}
+
+.comentario-autor {
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.comentario-fecha {
+  font-size: 0.8rem;
+  color: var(--secondary-color);
+}
+
+.comentario-contenido {
+  margin-top: 5px;
+}
+
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+}

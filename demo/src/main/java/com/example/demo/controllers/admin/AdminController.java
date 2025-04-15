@@ -1,5 +1,7 @@
 package com.example.demo.controllers.admin;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,10 +39,9 @@ public class AdminController {
     
     @PostMapping("/registrar-admin")
     public ResponseEntity<ApiResponse> registrarAdministrador(
-            @RequestBody RegistroRequest request,
+            @Valid @RequestBody RegistroRequest request,
             @RequestParam String adminUsername) {
         try {
-            // Verificar que quien hace la solicitud es un administrador
             UsuarioResponse admin = usuarioService.obtenerUsuarioPorUsername(adminUsername);
             if (!"ADMINISTRADOR".equals(admin.getRol())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -59,7 +60,7 @@ public class AdminController {
     @PutMapping("/tema/{id}/banear")
     public ResponseEntity<ApiResponse> banearTema(
             @PathVariable Long id,
-            @RequestBody BanRequest request,
+            @Valid @RequestBody BanRequest request,
             @RequestParam String adminUsername) {
         try {
             TemaResponse tema = adminService.banearTema(id, request, adminUsername);
@@ -86,7 +87,7 @@ public class AdminController {
     @PutMapping("/comentario/{id}/banear")
     public ResponseEntity<ApiResponse> banearComentario(
             @PathVariable Long id,
-            @RequestBody BanRequest request,
+            @Valid @RequestBody BanRequest request,
             @RequestParam String adminUsername) {
         try {
             ComentarioResponse comentario = adminService.banearComentario(id, request, adminUsername);

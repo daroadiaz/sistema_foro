@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ComentarioResponse {
-    
     private Long id;
     private String contenido;
     private LocalDateTime fechaCreacion;

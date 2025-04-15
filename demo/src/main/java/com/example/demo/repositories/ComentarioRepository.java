@@ -21,4 +21,8 @@ public interface ComentarioRepository extends JpaRepository<Comentario, Long> {
     Page<Comentario> findByTema(Tema tema, Pageable pageable);
     
     Page<Comentario> findByEstaBaneado(boolean estaBaneado, Pageable pageable);
+    
+    int countByTema(Tema tema);
+    
+    int countByAutor(Usuario autor);
 }

@@ -1,5 +1,7 @@
 package com.example.demo.controllers.user;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +24,7 @@ public class AuthController {
     private UsuarioService usuarioService;
     
     @PostMapping("/registro")
-    public ResponseEntity<ApiResponse> registrarUsuario(@RequestBody RegistroRequest request) {
+    public ResponseEntity<ApiResponse> registrarUsuario(@Valid @RequestBody RegistroRequest request) {
         try {
             UsuarioResponse usuario = usuarioService.registrarUsuario(request);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -34,19 +36,12 @@ public class AuthController {
     }
     
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LoginRequest request) {
         try {
-            boolean autenticado = usuarioService.autenticarUsuario(request.getUsername(), request.getPassword());
-            
-            if (autenticado) {
-                UsuarioResponse usuario = usuarioService.obtenerUsuarioPorUsername(request.getUsername());
-                return ResponseEntity.ok(new ApiResponse(true, "Login exitoso", usuario));
-            } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponse(false, "Credenciales inválidas"));
-            }
+            UsuarioResponse usuario = usuarioService.login(request);
+            return ResponseEntity.ok(new ApiResponse(true, "Login exitoso", usuario));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(new ApiResponse(false, e.getMessage()));
         }
     }

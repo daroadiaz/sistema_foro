@@ -1,15 +1,16 @@
 package com.example.demo.services.admin;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entities.Comentario;
 import com.example.demo.entities.Tema;
 import com.example.demo.entities.Usuario;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.UnauthorizedException;
 import com.example.demo.repositories.ComentarioRepository;
 import com.example.demo.repositories.TemaRepository;
 import com.example.demo.services.forum.ComentarioService;
@@ -37,12 +38,13 @@ public class AdminService {
     @Autowired
     private UsuarioService usuarioService;
     
+    @Transactional
     public TemaResponse banearTema(Long temaId, BanRequest request, String adminUsername) {
         Tema tema = temaService.obtenerTemaEntity(temaId);
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         tema.setEstaBaneado(true);
@@ -53,12 +55,13 @@ public class AdminService {
         return temaService.obtenerTemaPorId(tema.getId());
     }
     
+    @Transactional
     public TemaResponse desbanearTema(Long temaId, String adminUsername) {
         Tema tema = temaService.obtenerTemaEntity(temaId);
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         tema.setEstaBaneado(false);
@@ -69,12 +72,13 @@ public class AdminService {
         return temaService.obtenerTemaPorId(tema.getId());
     }
     
+    @Transactional
     public ComentarioResponse banearComentario(Long comentarioId, BanRequest request, String adminUsername) {
         Comentario comentario = comentarioService.obtenerComentarioEntity(comentarioId);
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         comentario.setEstaBaneado(true);
@@ -85,12 +89,13 @@ public class AdminService {
         return comentarioService.obtenerComentarioPorId(comentario.getId());
     }
     
+    @Transactional
     public ComentarioResponse desbanearComentario(Long comentarioId, String adminUsername) {
         Comentario comentario = comentarioService.obtenerComentarioEntity(comentarioId);
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         comentario.setEstaBaneado(false);
@@ -101,25 +106,27 @@ public class AdminService {
         return comentarioService.obtenerComentarioPorId(comentario.getId());
     }
     
+    @Transactional(readOnly = true)
     public Page<TemaResponse> listarTemasBaneados(Pageable pageable, String adminUsername) {
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         return temaRepository.findByEstaBaneado(true, pageable)
-            .map(tema -> temaService.obtenerTemaPorId(tema.getId()));
+            .map(tema -> temaService.convertToTemaResponse(tema));
     }
     
+    @Transactional(readOnly = true)
     public Page<ComentarioResponse> listarComentariosBaneados(Pageable pageable, String adminUsername) {
         Usuario admin = usuarioService.obtenerUsuarioEntity(adminUsername);
         
         if (admin.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permisos de administrador");
+            throw new UnauthorizedException("No tienes permisos de administrador");
         }
         
         return comentarioRepository.findByEstaBaneado(true, pageable)
-            .map(comentario -> comentarioService.obtenerComentarioPorId(comentario.getId()));
+            .map(comentario -> comentarioService.convertToComentarioResponse(comentario));
     }
 }

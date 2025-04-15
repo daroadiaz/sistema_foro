@@ -1,0 +1,16 @@
+.sidebar {
+    .active {
+      font-weight: bold;
+      color: var(--primary-color);
+    }
+    
+    .list-group-item {
+      border-radius: 0;
+      border-left: none;
+      border-right: none;
+      
+      &:first-child {
+        border-top: none;
+      }
+    }
+  }

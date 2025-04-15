@@ -1,0 +1,127 @@
+<div class="container mt-4">
+    <div *ngIf="loading" class="text-center">
+      <div class="spinner-border" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+    
+    <div *ngIf="errorMessage" class="alert alert-danger">
+      {{ errorMessage }}
+    </div>
+    
+    <div *ngIf="tema && !loading" class="tema-container">
+      <div class="row">
+        <div class="col-12">
+          <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+              <li class="breadcrumb-item"><a routerLink="/">Inicio</a></li>
+              <li class="breadcrumb-item"><a [routerLink]="['/categorias']">Categorías</a></li>
+              <li class="breadcrumb-item active" aria-current="page">{{ tema.titulo }}</li>
+            </ol>
+          </nav>
+          
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h1 class="mb-0">{{ tema.titulo }}</h1>
+              <div *ngIf="esAutor || esAdmin" class="btn-group">
+                <a [routerLink]="['/editar-tema', tema.id]" class="btn btn-sm btn-outline-primary">Editar</a>
+                <button (click)="eliminarTema()" class="btn btn-sm btn-outline-danger">Eliminar</button>
+              </div>
+            </div>
+            
+            <div class="card-body">
+              <div class="tema-info mb-3">
+                <small class="text-muted">
+                  Publicado por <strong>{{ tema.autor.username }}</strong> 
+                  el {{ tema.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}
+                  <span *ngIf="tema.ultimaActualizacion"> 
+                    (Actualizado el {{ tema.ultimaActualizacion | date: 'dd/MM/yyyy HH:mm' }})
+                  </span>
+                  <span class="ms-2 badge bg-secondary">{{ tema.nombreCategoria }}</span>
+                  <span *ngIf="tema.estaBaneado" class="ms-2 badge bg-danger">Baneado</span>
+                </small>
+              </div>
+              
+              <div class="tema-contenido">
+                <p>{{ tema.contenido }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <h3 class="mb-3">Comentarios ({{ tema.numeroComentarios }})</h3>
+          
+          <div *ngIf="isAutenticado" class="card mb-4">
+            <div class="card-header">Deja tu comentario</div>
+            <div class="card-body">
+              <form [formGroup]="comentarioForm" (ngSubmit)="enviarComentario()">
+                <div class="form-group mb-3">
+                  <textarea 
+                    formControlName="contenido" 
+                    class="form-control" 
+                    rows="3"
+                    placeholder="Escribe tu comentario aquí..." 
+                    [ngClass]="{ 'is-invalid': comentarioSubmitted && f.contenido.errors }"
+                  ></textarea>
+                  <div *ngIf="comentarioSubmitted && f.contenido.errors" class="invalid-feedback">
+                    <div *ngIf="f.contenido.errors.required">El comentario es obligatorio</div>
+                    <div *ngIf="f.contenido.errors.minlength">El comentario debe tener al menos 10 caracteres</div>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar Comentario</button>
+              </form>
+            </div>
+          </div>
+          
+          <div *ngIf="!isAutenticado" class="alert alert-info mb-4">
+            <a routerLink="/login" [queryParams]="{returnUrl: '/tema/' + tema.id}">Inicia sesión</a> para dejar un comentario.
+          </div>
+          
+          <div *ngIf="loadingComentarios" class="text-center">
+            <div class="spinner-border spinner-border-sm" role="status">
+              <span class="visually-hidden">Cargando comentarios...</span>
+            </div>
+          </div>
+          
+          <div *ngIf="comentarios.length === 0 && !loadingComentarios" class="text-center mb-4">
+            <p>No hay comentarios todavía. ¡Sé el primero en comentar!</p>
+          </div>
+          
+          <div *ngFor="let comentario of comentarios" class="card mb-3">
+            <div class="card-body comentario">
+              <div class="d-flex justify-content-between">
+                <p class="comentario-autor">{{ comentario.autor.username }}</p>
+                <small class="comentario-fecha">
+                  {{ comentario.fechaCreacion | date: 'dd/MM/yyyy HH:mm' }}
+                  <span *ngIf="comentario.ultimaActualizacion"> 
+                    (Editado)
+                  </span>
+                </small>
+              </div>
+              <p class="comentario-contenido">{{ comentario.contenido }}</p>
+            </div>
+          </div>
+          
+          <nav *ngIf="totalPaginas > 1" aria-label="Paginación de comentarios">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(0)">Primera</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual - 1)">Anterior</a>
+              </li>
+              <li *ngFor="let pagina of [].constructor(totalPaginas); let i = index" 
+                  class="page-item" [ngClass]="{'active': i === paginaActual}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(i)">{{ i + 1 }}</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === totalPaginas - 1}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual + 1)">Siguiente</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === totalPaginas - 1}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(totalPaginas - 1)">Última</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>

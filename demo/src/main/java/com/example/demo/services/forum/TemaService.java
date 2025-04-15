@@ -8,10 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.entities.Categoria;
 import com.example.demo.entities.Tema;
 import com.example.demo.entities.Usuario;
+import com.example.demo.exceptions.ResourceNotFoundException;
+import com.example.demo.exceptions.UnauthorizedException;
+import com.example.demo.repositories.ComentarioRepository;
 import com.example.demo.repositories.TemaRepository;
 import com.example.demo.services.user.UsuarioService;
 import com.example.demo.utils.dto.TemaRequest;
@@ -25,11 +29,15 @@ public class TemaService {
     private TemaRepository temaRepository;
     
     @Autowired
+    private ComentarioRepository comentarioRepository;
+    
+    @Autowired
     private CategoriaService categoriaService;
     
     @Autowired
     private UsuarioService usuarioService;
     
+    @Transactional
     public TemaResponse crearTema(TemaRequest request, String username) {
         Usuario autor = usuarioService.obtenerUsuarioEntity(username);
         Categoria categoria = categoriaService.obtenerCategoriaPorId(request.getCategoriaId());
@@ -46,6 +54,7 @@ public class TemaService {
         return convertToTemaResponse(tema);
     }
     
+    @Transactional(readOnly = true)
     public List<TemaResponse> listarTemasPorCategoria(Long categoriaId) {
         Categoria categoria = categoriaService.obtenerCategoriaPorId(categoriaId);
         
@@ -55,6 +64,7 @@ public class TemaService {
             .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public Page<TemaResponse> listarTemasPorCategoriaPaginados(Long categoriaId, Pageable pageable) {
         Categoria categoria = categoriaService.obtenerCategoriaPorId(categoriaId);
         
@@ -62,29 +72,39 @@ public class TemaService {
             .map(this::convertToTemaResponse);
     }
     
+    @Transactional(readOnly = true)
     public Page<TemaResponse> buscarTemasPorTitulo(String titulo, Pageable pageable) {
         return temaRepository.findByTituloContainingIgnoreCase(titulo, pageable)
             .map(this::convertToTemaResponse);
     }
     
+    @Transactional(readOnly = true)
+    public Page<TemaResponse> buscarTemasPorTituloOContenido(String query, Pageable pageable) {
+        return temaRepository.buscarPorTituloOContenido(query, pageable)
+            .map(this::convertToTemaResponse);
+    }
+    
+    @Transactional(readOnly = true)
     public TemaResponse obtenerTemaPorId(Long id) {
         Tema tema = temaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Tema no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tema no encontrado"));
         
         return convertToTemaResponse(tema);
     }
     
+    @Transactional
     public TemaResponse actualizarTema(Long id, TemaRequest request, String username) {
         Tema tema = temaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Tema no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tema no encontrado"));
         
         Usuario autor = usuarioService.obtenerUsuarioEntity(username);
         
-        if (!tema.getAutor().getId().equals(autor.getId())) {
-            throw new RuntimeException("No tienes permiso para editar este tema");
+        if (!tema.getAutor().getId().equals(autor.getId()) && 
+            autor.getRol() != Usuario.Rol.ADMINISTRADOR) {
+            throw new UnauthorizedException("No tienes permiso para editar este tema");
         }
         
-        if (tema.isEstaBaneado()) {
+        if (tema.isEstaBaneado() && autor.getRol() != Usuario.Rol.ADMINISTRADOR) {
             throw new RuntimeException("No puedes editar un tema baneado");
         }
         
@@ -102,20 +122,22 @@ public class TemaService {
         return convertToTemaResponse(tema);
     }
     
+    @Transactional
     public void eliminarTema(Long id, String username) {
         Tema tema = temaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Tema no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tema no encontrado"));
         
         Usuario usuario = usuarioService.obtenerUsuarioEntity(username);
         
         if (!tema.getAutor().getId().equals(usuario.getId()) && 
             usuario.getRol() != Usuario.Rol.ADMINISTRADOR) {
-            throw new RuntimeException("No tienes permiso para eliminar este tema");
+            throw new UnauthorizedException("No tienes permiso para eliminar este tema");
         }
         
         temaRepository.delete(tema);
     }
     
+    @Transactional(readOnly = true)
     public List<TemaResponse> listarTemasPorUsuario(String username) {
         Usuario usuario = usuarioService.obtenerUsuarioEntity(username);
         
@@ -124,21 +146,24 @@ public class TemaService {
             .collect(Collectors.toList());
     }
     
+    @Transactional(readOnly = true)
     public Tema obtenerTemaEntity(Long id) {
         return temaRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Tema no encontrado"));
+            .orElseThrow(() -> new ResourceNotFoundException("Tema no encontrado"));
     }
     
-    private TemaResponse convertToTemaResponse(Tema tema) {
+    public TemaResponse convertToTemaResponse(Tema tema) {
         UsuarioResponse autorResponse = new UsuarioResponse(
             tema.getAutor().getId(),
             tema.getAutor().getNombre(),
             tema.getAutor().getUsername(),
             tema.getAutor().getEmail(),
-            tema.getAutor().getRol().toString()
+            tema.getAutor().getRol().toString(),
+            tema.getAutor().isEstaActivo(),
+            tema.getAutor().getFechaRegistro()
         );
         
-        return new TemaResponse(
+        TemaResponse temaResponse = new TemaResponse(
             tema.getId(),
             tema.getTitulo(),
             tema.getContenido(),
@@ -149,5 +174,9 @@ public class TemaService {
             tema.isEstaBaneado(),
             tema.getRazonBaneo()
         );
+        
+        temaResponse.setNumeroComentarios(comentarioRepository.countByTema(tema));
+        
+        return temaResponse;
     }
 }

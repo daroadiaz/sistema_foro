@@ -2,6 +2,8 @@ package com.example.demo.controllers.forum;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +35,7 @@ public class ComentarioController {
     
     @PostMapping
     public ResponseEntity<ApiResponse> crearComentario(
-            @RequestBody ComentarioRequest request,
+            @Valid @RequestBody ComentarioRequest request,
             @RequestParam String username) {
         try {
             ComentarioResponse comentario = comentarioService.crearComentario(request, username);
@@ -89,7 +91,7 @@ public class ComentarioController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> actualizarComentario(
             @PathVariable Long id,
-            @RequestBody ComentarioRequest request,
+            @Valid @RequestBody ComentarioRequest request,
             @RequestParam String username) {
         try {
             ComentarioResponse comentario = comentarioService.actualizarComentario(id, request, username);

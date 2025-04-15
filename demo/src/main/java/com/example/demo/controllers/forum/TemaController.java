@@ -2,6 +2,8 @@ package com.example.demo.controllers.forum;
 
 import java.util.List;
 
+import jakarta.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,7 +35,7 @@ public class TemaController {
     
     @PostMapping
     public ResponseEntity<ApiResponse> crearTema(
-            @RequestBody TemaRequest request,
+            @Valid @RequestBody TemaRequest request,
             @RequestParam String username) {
         try {
             TemaResponse tema = temaService.crearTema(request, username);
@@ -75,7 +77,7 @@ public class TemaController {
         }
     }
     
-    @GetMapping("/buscar")
+    @GetMapping("/buscar/titulo")
     public ResponseEntity<ApiResponse> buscarTemasPorTitulo(
             @RequestParam String titulo,
             @RequestParam(defaultValue = "0") int pagina,
@@ -87,6 +89,25 @@ public class TemaController {
             Pageable pageable = PageRequest.of(pagina, tamanio, Sort.by(dir, ordenarPor));
             
             Page<TemaResponse> temas = temaService.buscarTemasPorTitulo(titulo, pageable);
+            return ResponseEntity.ok(new ApiResponse(true, "Resultados de búsqueda obtenidos", temas));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/buscar")
+    public ResponseEntity<ApiResponse> buscarTemasPorTituloOContenido(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int pagina,
+            @RequestParam(defaultValue = "10") int tamanio,
+            @RequestParam(defaultValue = "fechaCreacion") String ordenarPor,
+            @RequestParam(defaultValue = "desc") String direccion) {
+        try {
+            Sort.Direction dir = direccion.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+            Pageable pageable = PageRequest.of(pagina, tamanio, Sort.by(dir, ordenarPor));
+            
+            Page<TemaResponse> temas = temaService.buscarTemasPorTituloOContenido(query, pageable);
             return ResponseEntity.ok(new ApiResponse(true, "Resultados de búsqueda obtenidos", temas));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -119,7 +140,7 @@ public class TemaController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse> actualizarTema(
             @PathVariable Long id,
-            @RequestBody TemaRequest request,
+            @Valid @RequestBody TemaRequest request,
             @RequestParam String username) {
         try {
             TemaResponse tema = temaService.actualizarTema(id, request, username);

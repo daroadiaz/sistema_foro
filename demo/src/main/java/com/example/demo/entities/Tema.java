@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,9 +30,13 @@ public class Tema {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El título es obligatorio")
+    @Size(min = 5, max = 100, message = "El título debe tener entre 5 y 100 caracteres")
     @Column(nullable = false, length = 100)
     private String titulo;
 
+    @NotBlank(message = "El contenido es obligatorio")
+    @Size(min = 10, message = "El contenido debe tener al menos 10 caracteres")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String contenido;
 
@@ -57,7 +63,6 @@ public class Tema {
     @OneToMany(mappedBy = "tema")
     private Set<Comentario> comentarios = new HashSet<>();
     
-    // Constructor
     public Tema(String titulo, String contenido, Usuario autor, Categoria categoria) {
         this.titulo = titulo;
         this.contenido = contenido;
