@@ -1,27 +1,89 @@
-# ForoApp
+# Sistema de Foro Online - Guía de Despliegue con Docker
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 11.1.1.
+Este documento contiene instrucciones para compilar, desplegar y gestionar la aplicación de Foro Online utilizando Docker.
 
-## Development server
+## Requisitos previos
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+- Docker y Docker Compose instalados
+- MySQL corriendo en el puerto 3306
+- Puertos 80 y 8080 disponibles
 
-## Code scaffolding
+## Comandos básicos
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+### Compilar y desplegar la aplicación
 
-## Build
+Para compilar y desplegar el frontend y el backend simultáneamente:
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+```bash
+docker-compose up -d --build
+```
 
-## Running unit tests
+### Ver los logs en tiempo real
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+Para monitorear los logs de ambos servicios:
 
-## Running end-to-end tests
+```bash
+docker-compose logs -f
+```
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+Para ver los logs de un servicio específico:
 
-## Further help
+```bash
+# Para el backend
+docker-compose logs -f backend
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+# Para el frontend
+docker-compose logs -f frontend
+```
+
+### Detener los servicios
+
+Para detener y eliminar los contenedores:
+
+```bash
+docker-compose down
+```
+
+Para detener, eliminar los contenedores y eliminar los volúmenes:
+
+```bash
+docker-compose down -v
+```
+
+### Reiniciar los servicios
+
+Para reiniciar los servicios sin reconstruir las imágenes:
+
+```bash
+docker-compose restart
+```
+
+## Acceso a la aplicación
+
+El frontend está disponible en:
+
+```
+http://localhost
+```
+
+El backend (API) está disponible en:
+
+```
+http://localhost:8080/api
+```
+
+## Estructura de la aplicación
+
+- **Frontend**: Aplicación Angular servida por Nginx en el puerto 80
+- **Backend**: API REST con Spring Boot en el puerto 8080
+- **Base de datos**: MySQL en el puerto 3306 (host local)
+
+## Notas
+
+- La aplicación utiliza `host.docker.internal` para conectarse a la base de datos local
+- Los cambios en el código requieren reconstruir las imágenes con `docker-compose up -d --build`
+- Para desarrollo se puede usar un enfoque de volúmenes montados para evitar reconstruir las imágenes en cada cambio
+
+## Solución de problemas
+
+Si experimentas problemas de CORS, asegúrate de que la configuración de CORS en el backend y el archivo nginx.conf del frontend sean correctos.
