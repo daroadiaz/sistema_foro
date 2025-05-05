@@ -24,6 +24,19 @@ public class JwtUtil {
     private Long expiration;
 
     private SecretKey getSigningKey() {
+        // Genera una clave segura usando Keys.secretKeyFor
+        if (this.secret.length() < 32) {
+            // Si la clave es demasiado corta, la extendemos o generamos una nueva
+            this.secret = this.secret + "adicionalKeySecretForJwtSigningToMake256Bits";
+            // Asegurarse de que la clave tenga al menos 32 caracteres (256 bits)
+            if (this.secret.length() < 32) {
+                StringBuilder sb = new StringBuilder(this.secret);
+                while (sb.length() < 32) {
+                    sb.append("X");
+                }
+                this.secret = sb.toString();
+            }
+        }
         byte[] keyBytes = this.secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
