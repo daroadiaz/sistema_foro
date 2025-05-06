@@ -26,10 +26,12 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('foro-app');
   });
 
+  // Esta prueba fallará intencionalmente
   it('should render title', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('.content span').textContent).toContain('foro-app app is running!');
+    // Cambiamos el texto esperado para que falle
+    expect(compiled.querySelector('.content span').textContent).toContain('Esta prueba debe fallar');
   });
 });

@@ -1,0 +1,4 @@
+@echo off
+echo ===== Ejecutando análisis de SonarQube =====
+docker run --rm --network=host -v "%cd%:/usr/src" sonarsource/sonar-scanner-cli -Dsonar.projectKey=foro-app -Dsonar.projectName="Foro Online Frontend" -Dsonar.sources=src -Dsonar.tests=src -Dsonar.test.inclusions=**/*.spec.ts -Dsonar.exclusions=node_modules/**,**/*.spec.ts,src/environments/**,src/assets/** -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info -Dsonar.host.url=http://localhost:9000 -Dsonar.login=squ_e507e4be9a0212571f3c9270bdb2fe440cb7cb9c
+echo ===== Análisis completado =====
