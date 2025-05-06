@@ -194,3 +194,15 @@ Para mayor seguridad, puedes crear un token de acceso en SonarQube (Administraci
 ```bash
 docker run --rm -v "%cd%:/usr/src" sonarsource/sonar-scanner-cli -Dsonar.host.url=http://localhost:9000 -Dsonar.login=tu_token_aqui ...
 ```
+
+#### coverage del proyecto
+Obtener coverage del proyecto desde la raiz del frontend
+```bash
+ng test --no-watch --code-coverage
+```
+
+#### Contraseña SonarQube
+Contraseña SonarQube
+```bash
+P@ss1163Meth12345
+```
