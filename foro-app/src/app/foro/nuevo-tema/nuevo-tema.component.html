@@ -1,1 +1,76 @@
-<p>nuevo-tema works!</p>
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-8">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3>Crear Nuevo Tema</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          
+          <form [formGroup]="temaForm" (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label for="titulo" class="form-label">Título</label>
+              <input 
+                type="text" 
+                formControlName="titulo" 
+                class="form-control" 
+                [ngClass]="{ 'is-invalid': submitted && f.titulo.errors }" 
+              />
+              <div *ngIf="submitted && f.titulo.errors" class="invalid-feedback">
+                <div *ngIf="f.titulo.errors.required">El título es obligatorio</div>
+                <div *ngIf="f.titulo.errors.minlength">El título debe tener al menos 5 caracteres</div>
+                <div *ngIf="f.titulo.errors.maxlength">El título no puede tener más de 100 caracteres</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="categoriaId" class="form-label">Categoría</label>
+              <select 
+                formControlName="categoriaId" 
+                class="form-select" 
+                [ngClass]="{ 'is-invalid': submitted && f.categoriaId.errors }"
+              >
+                <option value="">Selecciona una categoría</option>
+                <option *ngFor="let categoria of categorias" [value]="categoria.id">
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+              <div *ngIf="submitted && f.categoriaId.errors" class="invalid-feedback">
+                <div *ngIf="f.categoriaId.errors.required">La categoría es obligatoria</div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="contenido" class="form-label">Contenido</label>
+              <textarea 
+                formControlName="contenido" 
+                class="form-control" 
+                rows="10" 
+                [ngClass]="{ 'is-invalid': submitted && f.contenido.errors }"
+              ></textarea>
+              <div *ngIf="submitted && f.contenido.errors" class="invalid-feedback">
+                <div *ngIf="f.contenido.errors.required">El contenido es obligatorio</div>
+                <div *ngIf="f.contenido.errors.minlength">El contenido debe tener al menos 10 caracteres</div>
+              </div>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+              <button type="button" class="btn btn-secondary" routerLink="/categorias">Cancelar</button>
+              <button type="submit" class="btn btn-primary" [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                Publicar Tema
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-4">
+      <app-sidebar></app-sidebar>
+    </div>
+  </div>
+</div>

@@ -1,1 +1,151 @@
-<p>admin-temas works!</p>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header bg-dark text-white">
+          <h4>Panel de Administración</h4>
+        </div>
+        <div class="list-group">
+          <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="list-group-item list-group-item-action">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+          </a>
+          <a routerLink="/admin/usuarios" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-people me-2"></i> Usuarios
+          </a>
+          <a routerLink="/admin/categorias" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-folder me-2"></i> Categorías
+          </a>
+          <a routerLink="/admin/temas" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-file-text me-2"></i> Temas
+          </a>
+          <a routerLink="/admin/comentarios" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-chat-dots me-2"></i> Comentarios
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+          <h3>Administración de Temas</h3>
+          <div class="btn-group">
+            <button class="btn btn-light" [class.active]="!mostrarBaneados" (click)="toggleMostrarBaneados(false)">
+              Todos los Temas
+            </button>
+            <button class="btn btn-light" [class.active]="mostrarBaneados" (click)="toggleMostrarBaneados(true)">
+              Temas Baneados
+            </button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          
+          <div *ngIf="temas.length === 0 && !loading" class="text-center">
+            <p>No hay temas {{ mostrarBaneados ? 'baneados' : '' }} para mostrar</p>
+          </div>
+          
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Título</th>
+                  <th>Autor</th>
+                  <th>Categoría</th>
+                  <th>Fecha</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let tema of temas">
+                  <td>{{ tema.id }}</td>
+                  <td>
+                    <a [routerLink]="['/tema', tema.id]" target="_blank">{{ tema.titulo }}</a>
+                  </td>
+                  <td>{{ tema.autor.username }}</td>
+                  <td>{{ tema.nombreCategoria }}</td>
+                  <td>{{ tema.fechaCreacion | date: 'dd/MM/yyyy' }}</td>
+                  <td>
+                    <span *ngIf="tema.estaBaneado" class="badge bg-danger">Baneado</span>
+                    <span *ngIf="!tema.estaBaneado" class="badge bg-success">Activo</span>
+                  </td>
+                  <td>
+                    <div class="btn-group">
+                      <button *ngIf="!tema.estaBaneado" class="btn btn-sm btn-warning" (click)="abrirModalBan(tema)">
+                        <i class="bi bi-ban"></i>
+                      </button>
+                      <button *ngIf="tema.estaBaneado" class="btn btn-sm btn-success" (click)="desbanearTema(tema.id)">
+                        <i class="bi bi-check-circle"></i>
+                      </button>
+                      <button class="btn btn-sm btn-danger" (click)="eliminarTema(tema.id)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <nav *ngIf="totalPaginas > 1" aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center">
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(0)">Primera</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === 0}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual - 1)">Anterior</a>
+              </li>
+              <li *ngFor="let pagina of [].constructor(totalPaginas); let i = index" 
+                  class="page-item" [ngClass]="{'active': i === paginaActual}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(i)">{{ i + 1 }}</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === totalPaginas - 1}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(paginaActual + 1)">Siguiente</a>
+              </li>
+              <li class="page-item" [ngClass]="{'disabled': paginaActual === totalPaginas - 1}">
+                <a class="page-link" href="javascript:void(0)" (click)="cambiarPagina(totalPaginas - 1)">Última</a>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal fade" id="banModal" tabindex="-1" aria-labelledby="banModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="banModalLabel">Banear Tema</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form [formGroup]="banForm">
+            <div class="mb-3">
+              <label for="razonBaneo" class="form-label">Razón del Baneo</label>
+              <textarea formControlName="razonBaneo" class="form-control" rows="3"></textarea>
+              <div *ngIf="submitted && banF.razonBaneo.errors" class="text-danger">
+                <small *ngIf="banF.razonBaneo.errors.required">La razón del baneo es obligatoria</small>
+                <small *ngIf="banF.razonBaneo.errors.minlength">La razón debe tener al menos 5 caracteres</small>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-warning" (click)="banearTema()">Banear</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+.tema-item {
+  transition: background-color 0.3s ease;
+  
+  &:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+}

@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Categoria } from '../../shared/models/categoria.model';
 import { Tema } from '../../shared/models/tema.model';
 import { CategoriaService } from '../../shared/services/categoria.service';
 import { TemaService } from '../../shared/services/tema.service';
@@ -10,7 +9,6 @@ import { TemaService } from '../../shared/services/tema.service';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  categorias: Categoria[] = [];
   temasMasRecientes: Tema[] = [];
   loading = true;
   errorMessage = '';
@@ -21,15 +19,14 @@ export class HomeComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.cargarCategorias();
-    this.cargarTemasMasRecientes();
+    this.cargarTemasRecientes();
   }
 
-  cargarCategorias(): void {
-    this.categoriaService.listarCategorias()
+  cargarTemasRecientes(): void {
+    this.temaService.buscarTemas('', 0, 10)
       .subscribe({
-        next: (categorias) => {
-          this.categorias = categorias;
+        next: (response) => {
+          this.temasMasRecientes = response.content;
           this.loading = false;
         },
         error: (error) => {
@@ -37,22 +34,5 @@ export class HomeComponent implements OnInit {
           this.loading = false;
         }
       });
-  }
-
-  cargarTemasMasRecientes(): void {
-    // Cargar temas más recientes de la primera categoría (o puedes implementar otra lógica)
-    setTimeout(() => {
-      if (this.categorias.length > 0) {
-        this.temaService.listarTemasPorCategoriaPaginados(this.categorias[0].id, 0, 5)
-          .subscribe({
-            next: (response) => {
-              this.temasMasRecientes = response.content;
-            },
-            error: (error) => {
-              this.errorMessage = error;
-            }
-          });
-      }
-    }, 1000);
   }
 }

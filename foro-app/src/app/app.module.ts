@@ -18,6 +18,7 @@ import { RecuperarPasswordComponent } from './auth/recuperar-password/recuperar-
 
 import { HomeComponent } from './foro/home/home.component';
 import { CategoriasComponent } from './foro/categorias/categorias.component';
+import { CategoriaDetalleComponent } from './foro/categoria-detalle/categoria-detalle.component';
 import { TemaDetalleComponent } from './foro/tema-detalle/tema-detalle.component';
 import { NuevoTemaComponent } from './foro/nuevo-tema/nuevo-tema.component';
 import { EditarTemaComponent } from './foro/editar-tema/editar-tema.component';
@@ -46,6 +47,7 @@ import { AdminCategoriasComponent } from './admin/admin-categorias/admin-categor
     RecuperarPasswordComponent,
     HomeComponent,
     CategoriasComponent,
+    CategoriaDetalleComponent,
     TemaDetalleComponent,
     NuevoTemaComponent,
     EditarTemaComponent,

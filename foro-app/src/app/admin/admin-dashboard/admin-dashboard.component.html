@@ -1,1 +1,161 @@
-<p>admin-dashboard works!</p>
+<div class="container-fluid mt-4">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="card">
+        <div class="card-header bg-dark text-white">
+          <h4>Panel de Administración</h4>
+        </div>
+        <div class="list-group">
+          <a routerLink="/admin" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="list-group-item list-group-item-action">
+            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+          </a>
+          <a routerLink="/admin/usuarios" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-people me-2"></i> Usuarios
+          </a>
+          <a routerLink="/admin/categorias" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-folder me-2"></i> Categorías
+          </a>
+          <a routerLink="/admin/temas" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-file-text me-2"></i> Temas
+          </a>
+          <a routerLink="/admin/comentarios" routerLinkActive="active" class="list-group-item list-group-item-action">
+            <i class="bi bi-chat-dots me-2"></i> Comentarios
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="col-md-9">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h3>Dashboard</h3>
+        </div>
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+          
+          <div *ngIf="errorMessage" class="alert alert-danger">
+            {{ errorMessage }}
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="card bg-primary text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="card-title">Usuarios</h6>
+                      <h2 class="mb-0">{{ stats.usuarios || 0 }}</h2>
+                    </div>
+                    <i class="bi bi-people fs-1"></i>
+                  </div>
+                </div>
+                <div class="card-footer bg-white text-primary text-center">
+                  <a routerLink="/admin/usuarios" class="text-decoration-none">Ver Detalles</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="card bg-success text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="card-title">Categorías</h6>
+                      <h2 class="mb-0">{{ stats.categorias || 0 }}</h2>
+                    </div>
+                    <i class="bi bi-folder fs-1"></i>
+                  </div>
+                </div>
+                <div class="card-footer bg-white text-success text-center">
+                  <a routerLink="/admin/categorias" class="text-decoration-none">Ver Detalles</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="card bg-warning text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="card-title">Temas</h6>
+                      <h2 class="mb-0">{{ stats.temas || 0 }}</h2>
+                    </div>
+                    <i class="bi bi-file-text fs-1"></i>
+                  </div>
+                </div>
+                <div class="card-footer bg-white text-warning text-center">
+                  <a routerLink="/admin/temas" class="text-decoration-none">Ver Detalles</a>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3 mb-4">
+              <div class="card bg-info text-white">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <h6 class="card-title">Comentarios</h6>
+                      <h2 class="mb-0">{{ stats.comentarios || 0 }}</h2>
+                    </div>
+                    <i class="bi bi-chat-dots fs-1"></i>
+                  </div>
+                </div>
+                <div class="card-footer bg-white text-info text-center">
+                  <a routerLink="/admin/comentarios" class="text-decoration-none">Ver Detalles</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row mt-4">
+            <div class="col-md-6 mb-4">
+              <div class="card">
+                <div class="card-header bg-secondary text-white">
+                  <h5>Temas Recientes</h5>
+                </div>
+                <div class="card-body">
+                  <ul class="list-group">
+                    <li *ngFor="let tema of temasRecientes" class="list-group-item d-flex justify-content-between align-items-center">
+                      <div>
+                        <a [routerLink]="['/tema', tema.id]">{{ tema.titulo }}</a>
+                        <br>
+                        <small class="text-muted">por {{ tema.autor.username }} el {{ tema.fechaCreacion | date: 'dd/MM/yyyy' }}</small>
+                      </div>
+                      <span *ngIf="tema.estaBaneado" class="badge bg-danger">Baneado</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+              <div class="card">
+                <div class="card-header bg-secondary text-white">
+                  <h5>Comentarios Recientes</h5>
+                </div>
+                <div class="card-body">
+                  <ul class="list-group">
+                    <li *ngFor="let comentario of comentariosRecientes" class="list-group-item">
+                      <div class="d-flex justify-content-between">
+                        <small class="text-muted">{{ comentario.autor.username }} en <a [routerLink]="['/tema', comentario.temaId]">Tema #{{ comentario.temaId }}</a></small>
+                        <small class="text-muted">{{ comentario.fechaCreacion | date: 'dd/MM/yyyy' }}</small>
+                      </div>
+                      <div class="mt-1">{{ comentario.contenido | slice:0:100 }}{{ comentario.contenido.length > 100 ? '...' : '' }}</div>
+                      <div *ngIf="comentario.estaBaneado" class="mt-1">
+                        <span class="badge bg-danger">Baneado</span>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

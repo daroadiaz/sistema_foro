@@ -10,6 +10,7 @@ import { RecuperarPasswordComponent } from './auth/recuperar-password/recuperar-
 
 import { HomeComponent } from './foro/home/home.component';
 import { CategoriasComponent } from './foro/categorias/categorias.component';
+import { CategoriaDetalleComponent } from './foro/categoria-detalle/categoria-detalle.component';
 import { TemaDetalleComponent } from './foro/tema-detalle/tema-detalle.component';
 import { NuevoTemaComponent } from './foro/nuevo-tema/nuevo-tema.component';
 import { EditarTemaComponent } from './foro/editar-tema/editar-tema.component';
@@ -32,6 +33,7 @@ const routes: Routes = [
   { path: 'registro', component: RegistroComponent },
   { path: 'recuperar-password', component: RecuperarPasswordComponent },
   { path: 'categorias', component: CategoriasComponent },
+  { path: 'categorias/:id', component: CategoriaDetalleComponent },
   { path: 'tema/:id', component: TemaDetalleComponent },
   { path: 'buscar', component: BuscarComponent },
   
